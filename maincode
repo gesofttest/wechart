@@ -1,0 +1,106 @@
+const canvas = wx.createCanvas()
+const context = canvas.getContext('2d') // 创建一个 2d context
+//context.fillStyle = '#FFFFFF' // 矩形颜色
+context.strokeStyle = '#404040'
+context.lineWidth = 1
+const {
+  windowWidth,
+  windowHeight
+} = wx.getSystemInfoSync()
+var WIDTHSIZE = 20
+var HEIGHTSIZE = windowHeight / windowWidth * WIDTHSIZE
+var boxWidth = (windowWidth / WIDTHSIZE)
+
+function randomColor() {
+  return "#" + (Math.round((1 << 24) * Math.random())).toString(16);
+}
+
+function drawRect(x, y) {
+  context.fillStyle = '#FFFFFF' // 矩形颜色
+  context.clearRect(x, y, boxWidth, boxWidth)
+  context.fillRect(x, y, boxWidth, boxWidth)
+  context.fill()
+  context.strokeRect(x, y, boxWidth, boxWidth)
+  context.stroke()
+  context.beginPath()
+}
+
+function HighlightDrawRect(x, y) {
+
+  context.fillStyle = randomColor() // 矩形颜色
+  context.clearRect(x, y, boxWidth, boxWidth)
+  context.fillRect(x, y, boxWidth, boxWidth)
+  context.fill()
+  context.strokeRect(x, y, boxWidth, boxWidth)
+  context.stroke()
+  context.beginPath()
+}
+
+function tuochCoordinate(HighlightX, HighlightY) {
+  const rectX = 0
+  let rectY = 0
+  for (let j = 0; j < HEIGHTSIZE; j++) {
+    for (let i = 0; i < WIDTHSIZE; i++) {
+      if ((HighlightX >= rectX + i * boxWidth) && (HighlightX < rectX + (i + 1) * boxWidth) && (HighlightY >= rectY + j * boxWidth) && (HighlightY < rectY + (j + 1) * boxWidth)) {
+        HighlightDrawRect(rectX + i * boxWidth, rectY + j * boxWidth)
+      } else {
+        drawRect(rectX + i * boxWidth, rectY + j * boxWidth)
+      }
+
+    }
+  }
+}
+
+function matrixCoordinate(board) {
+  const rectX = 0
+  let rectY = 0
+  for (let j = 0; j < HEIGHTSIZE; j++) {
+    for (let i = 0; i < WIDTHSIZE; i++) {
+      if (board[i][j].value == 1) {
+        HighlightDrawRect(rectX + i * boxWidth, rectY + j * boxWidth)
+      } else {
+        drawRect(rectX + i * boxWidth, rectY + j * boxWidth)
+      }
+
+    }
+  }
+}
+
+// 存储当前触摸坐标
+let touchX = 0
+let touchY = 0
+
+
+
+function initializeBoard() {
+  let board = [];
+  for (var i = 0; i < WIDTHSIZE; ++i) {
+    board[i] = [];
+    for (var j = 0; j < HEIGHTSIZE; ++j) {
+      board[i][j] = {
+        value: Math.round(Math.random()),
+        nearNum: 0
+      }
+    }
+    board[i][j] = 0;
+  }
+  return board;
+}
+
+function run() {
+  let board = initializeBoard()
+  matrixCoordinate(board)
+  wx.onTouchMove((res) => {
+    touchX = res.changedTouches[0].clientX // 重新判断当前触摸点x坐标
+    touchY = res.changedTouches[0].clientY // 重新判断当前触摸点y坐标
+    // tuochCoordinate(touchX, touchY)
+    run()
+  })
+  wx.onTouchStart((res) => {
+    touchX = res.changedTouches[0].clientX // 重新判断当前触摸点x坐标
+    touchY = res.changedTouches[0].clientY // 重新判断当前触摸点y坐标
+    // tuochCoordinate(touchX, touchY)
+    run()
+  })
+}
+setInterval(run(),1000)
